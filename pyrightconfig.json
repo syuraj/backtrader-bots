@@ -1,0 +1,16 @@
+{
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "**/__pycache__",
+    "**/.pytest_cache"
+  ],
+  "ignore": [
+    "src/backtrader_alpaca/strategies"
+  ],
+  "reportMissingImports": true,
+  "reportMissingTypeStubs": false,
+  "pythonVersion": "3.13",
+  "typeCheckingMode": "basic"
+}

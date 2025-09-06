@@ -65,9 +65,9 @@ backtest:
 	@python -c "\
 import sys; \
 sys.path.append('src'); \
-from backtrader_alpaca.strategies.unified_example_strategy import UnifiedExampleStrategy; \
+from backtrader_alpaca.strategies.example_strategy import ExampleStrategy; \
 from backtrader_alpaca.execution.backtest_runner import run_backtest; \
-run_backtest(UnifiedExampleStrategy, symbol='$(SYMBOL)', days=$(DAYS));"
+run_backtest(ExampleStrategy, symbol='$(SYMBOL)', days=$(DAYS));"
 
 paper:
 	@echo "Starting paper trading for $(SYMBOL) with $(STRATEGY)..."
@@ -75,9 +75,9 @@ paper:
 	@TRADING_ENVIRONMENT=paper python -c "\
 import sys; \
 sys.path.append('src'); \
-from backtrader_alpaca.strategies.unified_example_strategy import UnifiedExampleStrategy; \
+from backtrader_alpaca.strategies.example_strategy import ExampleStrategy; \
 from backtrader_alpaca.execution.live_runner import run_paper_trading; \
-run_paper_trading(UnifiedExampleStrategy, symbol='$(SYMBOL)');"
+run_paper_trading(ExampleStrategy, symbol='$(SYMBOL)');"
 
 live:
 	@echo "WARNING: Starting LIVE trading for $(SYMBOL) with $(STRATEGY)"
@@ -86,9 +86,9 @@ live:
 	@TRADING_ENVIRONMENT=live python -c "\
 import sys; \
 sys.path.append('src'); \
-from backtrader_alpaca.strategies.unified_example_strategy import UnifiedExampleStrategy; \
+from backtrader_alpaca.strategies.example_strategy import ExampleStrategy; \
 from backtrader_alpaca.execution.live_runner import run_live_trading; \
-run_live_trading(UnifiedExampleStrategy, symbol='$(SYMBOL)');"
+run_live_trading(ExampleStrategy, symbol='$(SYMBOL)');"
 
 # Quick development commands
 dev-setup: install
@@ -96,8 +96,9 @@ dev-setup: install
 
 quick-test:
 	@python -c "\
-from src.backtrader_alpaca.strategies.base_strategy import UnifiedStrategy; \
-from src.backtrader_alpaca.strategies.unified_example_strategy import UnifiedExampleStrategy; \
+import sys; \
+sys.path.append('src'); \
+from backtrader_alpaca.strategies.example_strategy import ExampleStrategy; \
 print('✅ Strategy framework imports successful');"
 
 # Data management
@@ -107,6 +108,6 @@ download-data:
 import sys; \
 sys.path.append('src'); \
 from backtrader_alpaca.execution.backtest_runner import run_backtest; \
-from backtrader_alpaca.strategies.unified_example_strategy import UnifiedExampleStrategy; \
-run_backtest(UnifiedExampleStrategy, symbol='$(SYMBOL)', days=5); \
+from backtrader_alpaca.strategies.example_strategy import ExampleStrategy; \
+run_backtest(ExampleStrategy, symbol='$(SYMBOL)', days=5); \
 print('Sample data generated for backtesting');"

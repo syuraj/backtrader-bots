@@ -1,10 +1,10 @@
 # Backtrader-Alpaca Trading Platform
 
-Unified options and equities trading platform integrating Backtrader framework with Alpaca API for seamless backtesting, paper trading, and live execution.
+Options and equities trading platform integrating Backtrader framework with Alpaca API for seamless backtesting, paper trading, and live execution.
 
 ## Features
 
-- **Unified Strategy Framework**: Single codebase for backtest/paper/live modes
+- **Strategy Framework**: Single codebase for backtest/paper/live modes
 - **Options Data Pipeline**: Real-time options chains with Greeks from Alpaca API
 - **Risk Management**: Position limits, stop-loss, drawdown protection
 - **Performance Monitoring**: Real-time P&L tracking with CSV export and visualization

@@ -1,5 +1,5 @@
 """Strategy modules for Trading strategies package."""
 
-from .base_strategy import UnifiedStrategy, StrategyParameters
+from .example_strategy import ExampleStrategy
 
-__all__ = ['UnifiedStrategy', 'StrategyParameters']
+__all__ = ['ExampleStrategy']

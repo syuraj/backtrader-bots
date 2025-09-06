@@ -2,10 +2,15 @@
 !.vscode
 !.windsurf
 
+*/venv/
 data/
 logs/
 backtest_results/
 
+**/.pytest_cache/
 __pycache__
+
 **/.env**
 !.env.example
+
+**/.idea/

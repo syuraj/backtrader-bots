@@ -47,7 +47,7 @@ so that I can analyze strategy effectiveness and make informed decisions.
 
 ### File List
 - `src/backtrader_alpaca/strategies/base_strategy.py` - Unified strategy framework
-- `src/backtrader_alpaca/strategies/unified_example_strategy.py` - Example implementation
+- `src/backtrader_alpaca/strategies/example_strategy.py` - Example implementation
 - `src/backtrader_alpaca/risk/risk_manager.py` - Risk management system
 - `src/backtrader_alpaca/monitoring/performance_monitor.py` - Performance tracking
 - `src/backtrader_alpaca/monitoring/__init__.py` - Monitoring package
