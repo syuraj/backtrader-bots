@@ -1,0 +1,308 @@
+Metadata-Version: 2.4
+Name: backtrader-alpaca
+Version: 0.1.0
+Summary: Python-based algorithmic trading system integrating backtrader with Alpaca brokerage API
+Author-email: Trading Platform Team <dev@example.com>
+License: MIT
+Project-URL: Homepage, https://github.com/example/backtrader-alpaca
+Project-URL: Repository, https://github.com/example/backtrader-alpaca.git
+Project-URL: Documentation, https://backtrader-alpaca.readthedocs.io
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Financial and Insurance Industry
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.13
+Classifier: Topic :: Office/Business :: Financial :: Investment
+Requires-Python: >=3.13
+Description-Content-Type: text/markdown
+Requires-Dist: backtrader>=1.9.78.123
+Requires-Dist: alpaca-py>=0.25.0
+Requires-Dist: pandas>=2.1.0
+Requires-Dist: numpy>=1.24.0
+Requires-Dist: matplotlib>=3.7.0
+Requires-Dist: pydantic>=2.5.0
+Requires-Dist: pydantic-settings>=2.1.0
+Requires-Dist: python-dotenv>=1.0.0
+Requires-Dist: structlog>=23.2.0
+Requires-Dist: pytest>=7.4.0
+Requires-Dist: pytest-asyncio>=0.21.0
+Requires-Dist: scipy>=1.11.0
+Requires-Dist: requests>=2.31.0
+Provides-Extra: visualization
+Requires-Dist: matplotlib>=3.7.0; extra == "visualization"
+Requires-Dist: plotly>=5.15.0; extra == "visualization"
+Provides-Extra: dev
+Requires-Dist: pytest>=7.4.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.1.0; extra == "dev"
+Requires-Dist: pytest-asyncio>=0.21.0; extra == "dev"
+Requires-Dist: black>=23.7.0; extra == "dev"
+Requires-Dist: flake8>=6.0.0; extra == "dev"
+Requires-Dist: mypy>=1.5.0; extra == "dev"
+Requires-Dist: pre-commit>=3.3.0; extra == "dev"
+
+# Backtrader-Alpaca Trading Platform
+
+Unified options and equities trading platform integrating Backtrader framework with Alpaca API for seamless backtesting, paper trading, and live execution.
+
+## Features
+
+- **Unified Strategy Framework**: Single codebase for backtest/paper/live modes
+- **Options Data Pipeline**: Real-time options chains with Greeks from Alpaca API
+- **Risk Management**: Position limits, stop-loss, drawdown protection
+- **Performance Monitoring**: Real-time P&L tracking with CSV export and visualization
+- **Environment Detection**: Automatic broker switching based on trading mode
+
+## Quick Start
+
+### Prerequisites
+
+- Python 3.13+
+- Alpaca brokerage account (paper or live)
+- API keys configured in `.env` file
+
+### Installation
+
+```bash
+# Clone and install
+git clone <repository-url>
+cd backtrader-bots
+make install
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your Alpaca API credentials
+```
+
+### Environment Configuration
+
+Create `.env` file with your Alpaca credentials:
+
+```env
+# Alpaca API Configuration
+ALPACA_API_KEY=your_api_key_here
+ALPACA_SECRET_KEY=your_secret_key_here
+ALPACA_BASE_URL=https://paper-api.alpaca.markets  # Paper trading
+# ALPACA_BASE_URL=https://api.alpaca.markets      # Live trading
+
+# Trading Configuration
+TRADING_ENVIRONMENT=development
+LOG_LEVEL=INFO
+MAX_POSITION_SIZE=1000.0
+MAX_DAILY_LOSS=100.0
+```
+
+## Usage
+
+### Running Backtests
+
+Test strategies against historical data:
+
+```bash
+# Basic backtest with default parameters
+make backtest
+
+# Custom symbol and timeframe
+make backtest SYMBOL=TSLA DAYS=90
+
+# Test with different strategy
+make backtest SYMBOL=SPY DAYS=30 STRATEGY=UnifiedExampleStrategy
+```
+
+**Backtest Output:**
+- Performance metrics in terminal
+- Trade log in `logs/trading.log`
+- CSV export in `data/backtest_results.csv`
+- Matplotlib charts saved to `charts/`
+
+### Paper Trading
+
+Execute strategies with simulated money:
+
+```bash
+# Start paper trading (runs continuously)
+make paper SYMBOL=AAPL
+
+# Paper trading with custom symbol
+make paper SYMBOL=QQQ
+```
+
+**Paper Trading Features:**
+- Real-time market data
+- Simulated order execution
+- Risk management enforcement
+- Performance tracking
+- Stop with Ctrl+C
+
+### Live Trading
+
+**⚠️ WARNING: Uses real money**
+
+```bash
+# Live trading (10-second confirmation delay)
+make live SYMBOL=AAPL
+```
+
+**Live Trading Requirements:**
+- Valid live trading API keys
+- Sufficient account balance
+- Risk parameters configured
+- Market hours operation
+
+## Strategy Development
+
+### Creating Custom Strategies
+
+Extend the `UnifiedStrategy` base class:
+
+```python
+from src.backtrader_alpaca.strategies.base_strategy import UnifiedStrategy
+
+class MyStrategy(UnifiedStrategy):
+    params = (
+        ('symbol', 'AAPL'),
+        ('position_size', 100),
+        ('stop_loss_pct', 0.05),
+    )
+    
+    def init_strategy(self):
+        """Initialize indicators and state."""
+        self.sma = self.data.close.sma(period=20)
+    
+    def generate_signals(self):
+        """Generate buy/sell signals."""
+        if self.data.close[0] > self.sma[0]:
+            return {'action': 'buy', 'size': self.params.position_size}
+        elif self.data.close[0] < self.sma[0]:
+            return {'action': 'sell', 'size': self.params.position_size}
+        return {'action': 'hold'}
+```
+
+### Strategy Parameters
+
+Configure via strategy params:
+
+- `symbol`: Trading symbol (e.g., 'AAPL', 'SPY')
+- `position_size`: Default position size
+- `max_position_value`: Maximum position value in USD
+- `stop_loss_pct`: Stop loss percentage (0-1)
+- `take_profit_pct`: Take profit percentage
+
+### Risk Management
+
+Built-in risk controls:
+
+- **Position Limits**: Maximum position size and value
+- **Drawdown Protection**: Portfolio-level loss limits
+- **Stop Loss/Take Profit**: Automatic order management
+- **Real-time Monitoring**: Risk metrics and alerts
+
+## Development
+
+### Testing
+
+```bash
+# Run all tests
+make test
+
+# Test with coverage
+make coverage
+
+# Quick framework test
+make quick-test
+```
+
+### Code Quality
+
+```bash
+# Lint code
+make lint
+
+# Format code
+make format
+
+# Clean build artifacts
+make clean
+```
+
+### Project Structure
+
+```
+src/backtrader_alpaca/
+├── clients/           # API clients (Alpaca, options)
+├── config/           # Settings and configuration
+├── data/             # Data storage and management
+├── execution/        # Brokers and execution engines
+├── models/           # Data models (Pydantic)
+├── monitoring/       # Performance tracking
+├── risk/             # Risk management
+├── strategies/       # Trading strategies
+└── utils/            # Utilities and logging
+```
+
+## Monitoring and Analysis
+
+### Performance Metrics
+
+Real-time tracking includes:
+
+- Portfolio value and P&L
+- Sharpe ratio calculation
+- Maximum drawdown
+- Win/loss ratios
+- Risk-adjusted returns
+
+### Data Export
+
+Results exported to:
+
+- `logs/trading.log` - Structured logging
+- `data/trades.csv` - Trade history
+- `data/positions.csv` - Position tracking
+- `data/performance.csv` - Performance metrics
+
+### Visualization
+
+Matplotlib charts generated:
+
+- Equity curve
+- Drawdown analysis
+- Trade distribution
+- Risk metrics over time
+
+## Troubleshooting
+
+### Common Issues
+
+**API Authentication Errors:**
+- Verify API keys in `.env` file
+- Check Alpaca account status
+- Ensure correct base URL (paper vs live)
+
+**Import Errors:**
+- Run `make install` to install dependencies
+- Verify Python 3.13+ installation
+- Check virtual environment activation
+
+**Strategy Execution Issues:**
+- Review `logs/trading.log` for errors
+- Verify market hours for live trading
+- Check risk parameter configuration
+
+### Support
+
+- Review logs in `logs/trading.log`
+- Check test coverage with `make coverage`
+- Validate configuration with `make quick-test`
+
+## Architecture
+
+Built on proven components:
+
+- **Backtrader**: Strategy framework and backtesting engine
+- **Alpaca API**: Commission-free brokerage with options support
+- **Pydantic**: Data validation and settings management
+- **Structlog**: Structured logging and monitoring
+
+## License
+
+[Add your license information here]

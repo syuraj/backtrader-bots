@@ -1,0 +1,11 @@
+!docs
+!.vscode
+!.windsurf
+
+data/
+logs/
+backtest_results/
+
+__pycache__
+**/.env**
+!.env.example
