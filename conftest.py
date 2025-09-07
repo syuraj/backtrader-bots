@@ -17,7 +17,7 @@ def test_settings():
         alpaca_base_url="https://paper-api.alpaca.markets",
         max_position_size=1000.0,
         max_daily_loss=100.0,
-        log_level="DEBUG"
+        log_level="DEBUG",
     )
 
 
@@ -26,9 +26,7 @@ def mock_alpaca_client():
     """Mock Alpaca API client."""
     mock_client = Mock()
     mock_client.get_account.return_value = Mock(
-        buying_power=10000.0,
-        cash=5000.0,
-        portfolio_value=15000.0
+        buying_power=10000.0, cash=5000.0, portfolio_value=15000.0
     )
     return mock_client
 
@@ -36,14 +34,7 @@ def mock_alpaca_client():
 @pytest.fixture
 def sample_market_data():
     """Sample market data for testing."""
-    return {
-        "AAPL": {
-            "price": 150.00,
-            "volume": 1000000,
-            "bid": 149.99,
-            "ask": 150.01
-        }
-    }
+    return {"AAPL": {"price": 150.00, "volume": 1000000, "bid": 149.99, "ask": 150.01}}
 
 
 @pytest.fixture

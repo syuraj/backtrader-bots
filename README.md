@@ -62,15 +62,29 @@ make backtest
 # Custom symbol and timeframe
 make backtest SYMBOL=TSLA DAYS=90
 
-# Test with different strategy
-make backtest SYMBOL=SPY DAYS=30 STRATEGY=UnifiedExampleStrategy
+# Tune DivergenceStrategy parameters from the CLI
+# Stop-loss / Take-profit
+make backtest STOP_LOSS_PCT=0.03 TAKE_PROFIT_PCT=0.06
+
+# TSI lengths (fast/slow)
+make backtest TSI_FAST=13 TSI_SLOW=7
+
+# EMA period
+make backtest EMA_PERIOD=50
+
+# Entry parent limit offset (as fraction of price)
+make backtest ENTRY_LIMIT_OFFSET_PCT=0.0005
+
+# Combine multiple overrides
+make backtest SYMBOL=NQ DAYS=60 TSI_FAST=13 TSI_SLOW=7 EMA_PERIOD=50 ENTRY_LIMIT_OFFSET_PCT=0.0005 STOP_LOSS_PCT=0.03 TAKE_PROFIT_PCT=0.06
 ```
 
 **Backtest Output:**
-- Performance metrics in terminal
-- Trade log in `logs/trading.log`
-- CSV export in `data/backtest_results.csv`
-- Matplotlib charts saved to `charts/`
+- Performance summary logged to terminal
+- Timestamped folder under `backtest_results/run_YYYYMMDD_HHMMSS/` containing:
+  - `report.md` – Markdown summary
+  - `results.json` – Raw metrics
+  - `chart.png` – Price, indicators, and trades chart (if generated)
 
 ### Paper Trading
 
@@ -144,6 +158,11 @@ Configure via strategy params:
 - `max_position_value`: Maximum position value in USD
 - `stop_loss_pct`: Stop loss percentage (0-1)
 - `take_profit_pct`: Take profit percentage
+- `tsi_fast` / `tsi_slow`: TSI fast/slow lengths
+- `ema_period`: EMA period
+- `entry_limit_offset_pct`: Parent limit offset from current price (fraction)
+
+These can be overridden from the CLI via the Makefile variables shown above.
 
 ### Risk Management
 

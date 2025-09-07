@@ -2,6 +2,7 @@
 # Provides convenient commands for development, testing, and trading operations
 
 .PHONY: help install test lint clean backtest paper live coverage format
+.ONESHELL:
 
 # Default target
 help:
@@ -55,19 +56,46 @@ clean:
 	rm -rf dist/
 
 # Trading operations
-SYMBOL ?= AAPL
+SYMBOL ?= NQ
 DAYS ?= 60
-STRATEGY ?= UnifiedExampleStrategy
+STRATEGY ?= DivergenceStrategy
+
+# Strategy parameter defaults (can be overridden on the command line)
+STOP_LOSS_PCT ?= 0.05
+TAKE_PROFIT_PCT ?= 0.10
+TSI_FAST ?= 25
+TSI_SLOW ?= 13
+EMA_PERIOD ?= 25
+ENTRY_LIMIT_OFFSET_PCT ?= 0.001
+USE_MARKET_PARENT ?= 0
+DISPLAY_PLOT ?= 0
+# Divergence flexibility
+SLOPE_EPS ?= 1e-6
+MAX_PIVOT_AGE_BARS ?= 50
+REQUIRE_BOTH_SERIES ?= 1
+VERBOSE ?= 0
+STRATEGY_DEBUG ?= 0
 
 backtest:
 	@echo "Running backtest for $(SYMBOL) with $(STRATEGY)..."
 	@echo "Data period: $(DAYS) days"
-	@python -c "\
-import sys; \
-sys.path.append('src'); \
-from backtrader_alpaca.strategies.example_strategy import ExampleStrategy; \
-from backtrader_alpaca.execution.backtest_runner import run_backtest; \
-run_backtest(ExampleStrategy, symbol='$(SYMBOL)', days=$(DAYS));"
+	@PYTHONUNBUFFERED=1 \
+	DISPLAY_PLOT=$(DISPLAY_PLOT) \
+	VERBOSE=$(VERBOSE) \
+	SYMBOL=$(SYMBOL) \
+	DAYS=$(DAYS) \
+	STOP_LOSS_PCT=$(STOP_LOSS_PCT) \
+	TAKE_PROFIT_PCT=$(TAKE_PROFIT_PCT) \
+	TSI_FAST=$(TSI_FAST) \
+	TSI_SLOW=$(TSI_SLOW) \
+	EMA_PERIOD=$(EMA_PERIOD) \
+	ENTRY_LIMIT_OFFSET_PCT=$(ENTRY_LIMIT_OFFSET_PCT) \
+	USE_MARKET_PARENT=$(USE_MARKET_PARENT) \
+	SLOPE_EPS=$(SLOPE_EPS) \
+	MAX_PIVOT_AGE_BARS=$(MAX_PIVOT_AGE_BARS) \
+	REQUIRE_BOTH_SERIES=$(REQUIRE_BOTH_SERIES) \
+	STRATEGY_DEBUG=$(STRATEGY_DEBUG) \
+	python3 scripts/run_backtest.py
 
 paper:
 	@echo "Starting paper trading for $(SYMBOL) with $(STRATEGY)..."
@@ -75,9 +103,9 @@ paper:
 	@TRADING_ENVIRONMENT=paper python -c "\
 import sys; \
 sys.path.append('src'); \
-from backtrader_alpaca.strategies.example_strategy import ExampleStrategy; \
+from backtrader_alpaca.strategies.divergence_strategy import DivergenceStrategy; \
 from backtrader_alpaca.execution.live_runner import run_paper_trading; \
-run_paper_trading(ExampleStrategy, symbol='$(SYMBOL)');"
+run_paper_trading(DivergenceStrategy, symbol='$(SYMBOL)');"
 
 live:
 	@echo "WARNING: Starting LIVE trading for $(SYMBOL) with $(STRATEGY)"
@@ -86,9 +114,9 @@ live:
 	@TRADING_ENVIRONMENT=live python -c "\
 import sys; \
 sys.path.append('src'); \
-from backtrader_alpaca.strategies.example_strategy import ExampleStrategy; \
+from backtrader_alpaca.strategies.divergence_strategy import DivergenceStrategy; \
 from backtrader_alpaca.execution.live_runner import run_live_trading; \
-run_live_trading(ExampleStrategy, symbol='$(SYMBOL)');"
+run_live_trading(DivergenceStrategy, symbol='$(SYMBOL)');"
 
 # Quick development commands
 dev-setup: install

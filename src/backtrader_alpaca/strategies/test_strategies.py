@@ -13,29 +13,40 @@ class TestExampleStrategyLogic:
 
     def test_strategy_parameters(self):
         """Test ExampleStrategy has expected parameters."""
-        assert hasattr(ExampleStrategy, 'params')
-        param_names = ['symbol', 'position_size', 'max_position_value', 'stop_loss_pct', 'take_profit_pct', 'sma_period']
+        assert hasattr(ExampleStrategy, "params")
+        param_names = [
+            "symbol",
+            "position_size",
+            "max_position_value",
+            "stop_loss_pct",
+            "take_profit_pct",
+            "sma_period",
+        ]
         for param_name in param_names:
-            assert hasattr(ExampleStrategy.params, param_name), f"Missing parameter: {param_name}"
+            assert hasattr(
+                ExampleStrategy.params, param_name
+            ), f"Missing parameter: {param_name}"
 
     def test_parameter_values(self):
         """Test ExampleStrategy parameter default values."""
         params = ExampleStrategy.params
-        assert params.symbol == 'AAPL'
+        assert params.symbol == "AAPL"
         assert params.position_size == 1
         assert params.max_position_value == 50000
         assert params.stop_loss_pct == 0.05
         assert params.take_profit_pct == 0.10
         assert params.sma_period == 20
 
-    @patch('backtrader.Strategy.__init__')
+    @patch("backtrader.Strategy.__init__")
     def test_strategy_initialization_mocked(self, mock_bt_init):
         """Test strategy initialization with mocked Backtrader."""
         mock_bt_init.return_value = None
 
         # Mock the Backtrader components
-        with patch('backtrader.indicators.SMA') as mock_sma, \
-             patch('backtrader.indicators.RSI') as mock_rsi:
+        with (
+            patch("backtrader.indicators.SMA") as mock_sma,
+            patch("backtrader.indicators.RSI") as mock_rsi,
+        ):
 
             mock_sma.return_value = Mock()
             mock_rsi.return_value = Mock()
@@ -62,6 +73,7 @@ class TestExampleStrategyLogic:
 
         # Mock SMA indicator with proper behavior
         strategy.sma = Mock()
+
         # Use side_effect to handle indexing
         def sma_getitem(index):
             if index == 0:
@@ -69,15 +81,18 @@ class TestExampleStrategyLogic:
             elif index == -1:
                 return 150.0  # Previous SMA value
             return 152.0
+
         strategy.sma.__getitem__ = Mock(side_effect=sma_getitem)
 
         # Mock data
         strategy.data = Mock()
         strategy.data.close = Mock()
+
         def close_getitem(index):
             if index == 0:
                 return 156.0  # Current price above SMA
             return 155.0
+
         strategy.data.close.__getitem__ = Mock(side_effect=close_getitem)
 
         # Mock position
@@ -99,19 +114,23 @@ class TestExampleStrategyLogic:
 
         # Mock SMA indicator for bearish signal
         strategy.sma = Mock()
+
         def sma_getitem(index):
             if index == 0:
                 return 148.0  # Current SMA value
             return 150.0
+
         strategy.sma.__getitem__ = Mock(side_effect=sma_getitem)
 
         # Mock data
         strategy.data = Mock()
         strategy.data.close = Mock()
+
         def close_getitem(index):
             if index == 0:
                 return 145.0  # Current price below SMA
             return 147.0
+
         strategy.data.close.__getitem__ = Mock(side_effect=close_getitem)
 
         # Mock position (currently long)
@@ -133,15 +152,19 @@ class TestExampleStrategyLogic:
 
         # Mock SMA indicator for neutral signal
         strategy.sma = Mock()
+
         def sma_getitem(index):
             return 150.0  # SMA value
+
         strategy.sma.__getitem__ = Mock(side_effect=sma_getitem)
 
         # Mock data - price very close to SMA
         strategy.data = Mock()
         strategy.data.close = Mock()
+
         def close_getitem(index):
             return 150.1  # Price very close to SMA
+
         strategy.data.close.__getitem__ = Mock(side_effect=close_getitem)
 
         # Mock position

@@ -2,4 +2,4 @@
 
 from .example_strategy import ExampleStrategy
 
-__all__ = ['ExampleStrategy']
+__all__ = ["ExampleStrategy"]

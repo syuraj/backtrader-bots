@@ -21,11 +21,13 @@ logger = logger
 
 class AlpacaAPIError(Exception):
     """Custom exception for Alpaca API errors."""
+
     pass
 
 
 class AlpacaConnectionError(AlpacaAPIError):
     """Exception raised when connection to Alpaca API fails."""
+
     pass
 
 
@@ -47,9 +49,11 @@ class AlpacaClient:
         self._data_client: Optional[StockHistoricalDataClient] = None
         self.api = None  # For test compatibility
 
-        logger.info("Alpaca client initialized",
-                   base_url=self.base_url,
-                   environment=self.settings.environment)
+        logger.info(
+            "Alpaca client initialized",
+            base_url=self.base_url,
+            environment=self.settings.environment,
+        )
 
     @property
     def trading_client(self) -> TradingClient:
@@ -58,7 +62,7 @@ class AlpacaClient:
             self._trading_client = TradingClient(
                 api_key=self.api_key,
                 secret_key=self.secret_key,
-                paper=settings.environment != "live"
+                paper=settings.environment != "live",
             )
         return self._trading_client
 
@@ -67,8 +71,7 @@ class AlpacaClient:
         """Get or create data client."""
         if self._data_client is None:
             self._data_client = StockHistoricalDataClient(
-                api_key=self.api_key,
-                secret_key=self.secret_key
+                api_key=self.api_key, secret_key=self.secret_key
             )
         return self._data_client
 
@@ -77,9 +80,11 @@ class AlpacaClient:
         try:
             account = self.trading_client.get_account()
             account_data: Any = account  # Type hint for Alpaca response
-            logger.info("Connection validated successfully",
-                       account_id=str(account_data.id),
-                       buying_power=float(account_data.buying_power or 0))
+            logger.info(
+                "Connection validated successfully",
+                account_id=str(account_data.id),
+                buying_power=float(account_data.buying_power or 0),
+            )
             return True
         except Exception as e:
             logger.error("Connection validation failed", error=str(e))
@@ -88,14 +93,20 @@ class AlpacaClient:
     def get_account_info(self) -> AccountInfo:
         """Get account information."""
         try:
-            account_response : Union[TradeAccount, RawData] = self.trading_client.get_account()
+            account_response: Union[TradeAccount, RawData] = (
+                self.trading_client.get_account()
+            )
             account = cast(TradeAccount, account_response)
             return AccountInfo(
                 id=account.id,
                 buying_power=Decimal(str(account.buying_power or "0")),
                 cash=Decimal(str(account.cash or "0")),
                 portfolio_value=Decimal(str(account.portfolio_value or "0")),
-                status=str(account.status.value if hasattr(account.status, 'value') else account.status)
+                status=str(
+                    account.status.value
+                    if hasattr(account.status, "value")
+                    else account.status
+                ),
             )
         except Exception as e:
             logger.error("Failed to get account info", error=str(e))
@@ -117,18 +128,20 @@ class AlpacaClient:
                 ask=Decimal(str(quote.ask_price)),
                 bid_size=int(quote.bid_size),
                 ask_size=int(quote.ask_size),
-                timestamp=quote.timestamp
+                timestamp=quote.timestamp,
             )
         except Exception as e:
             logger.error("Failed to get latest quote", symbol=symbol, error=str(e))
             raise AlpacaAPIError(f"Failed to get quote for {symbol}: {e}")
 
-    def get_historical_bars(self,
-                           symbol: str,
-                           timeframe: Optional[TimeFrame] = None,
-                           start: Optional[datetime] = None,
-                           end: Optional[datetime] = None,
-                           limit: int = 100) -> List[BarData]:
+    def get_historical_bars(
+        self,
+        symbol: str,
+        timeframe: Optional[TimeFrame] = None,
+        start: Optional[datetime] = None,
+        end: Optional[datetime] = None,
+        limit: int = 100,
+    ) -> List[BarData]:
         """Get historical bar data for a symbol."""
         try:
             if timeframe is None:
@@ -143,10 +156,12 @@ class AlpacaClient:
                 timeframe=timeframe,  # type: ignore[arg-type]
                 start=start,
                 end=end,
-                limit=limit
+                limit=limit,
             )
 
-            bars_response: Union[BarSet, RawData] = self.data_client.get_stock_bars(request)
+            bars_response: Union[BarSet, RawData] = self.data_client.get_stock_bars(
+                request
+            )
 
             # Handle different response types
             if isinstance(bars_response, BarSet):
@@ -163,28 +178,33 @@ class AlpacaClient:
             result: List[BarData] = []
             for bar in bar_list:
                 bar_data: Any = bar  # Type hint for individual bar
-                result.append(BarData(
-                    symbol=symbol,
-                    timestamp=bar_data.timestamp,
-                    open=Decimal(str(bar_data.open)),
-                    high=Decimal(str(bar_data.high)),
-                    low=Decimal(str(bar_data.low)),
-                    close=Decimal(str(bar_data.close)),
-                    volume=int(bar_data.volume)
-                ))
+                result.append(
+                    BarData(
+                        symbol=symbol,
+                        timestamp=bar_data.timestamp,
+                        open=Decimal(str(bar_data.open)),
+                        high=Decimal(str(bar_data.high)),
+                        low=Decimal(str(bar_data.low)),
+                        close=Decimal(str(bar_data.close)),
+                        volume=int(bar_data.volume),
+                    )
+                )
 
-            logger.info("Retrieved historical bars",
-                       symbol=symbol,
-                       count=len(result),
-                       timeframe=str(timeframe))
+            logger.info(
+                "Retrieved historical bars",
+                symbol=symbol,
+                count=len(result),
+                timeframe=str(timeframe),
+            )
             return result
 
         except Exception as e:
-            logger.error("Failed to get historical bars",
-                        symbol=symbol, error=str(e))
+            logger.error("Failed to get historical bars", symbol=symbol, error=str(e))
             raise AlpacaAPIError(f"Failed to get bars for {symbol}: {e}")
 
-    def get_tradable_assets(self, asset_class: AssetClass = AssetClass.US_EQUITY) -> List[AssetData]:
+    def get_tradable_assets(
+        self, asset_class: AssetClass = AssetClass.US_EQUITY
+    ) -> List[AssetData]:
         """Get list of tradable assets."""
         try:
             request = GetAssetsRequest(asset_class=asset_class)
@@ -194,14 +214,24 @@ class AlpacaClient:
             result: List[AssetData] = []
             for asset in assets_data:
                 asset_data: Any = asset  # Type hint for individual asset
-                if getattr(asset_data, 'tradable', False):
-                    result.append(AssetData(
-                        symbol=str(getattr(asset_data, 'symbol', '')),
-                        name=str(getattr(asset_data, 'name', '') or ""),
-                        exchange=str(getattr(asset_data.exchange, 'value', '') if hasattr(asset_data, 'exchange') else ''),
-                        asset_class=str(getattr(asset_data.asset_class, 'value', 'us_equity') if hasattr(asset_data, 'asset_class') else 'us_equity'),
-                        tradable=bool(getattr(asset_data, 'tradable', False))
-                    ))
+                if getattr(asset_data, "tradable", False):
+                    result.append(
+                        AssetData(
+                            symbol=str(getattr(asset_data, "symbol", "")),
+                            name=str(getattr(asset_data, "name", "") or ""),
+                            exchange=str(
+                                getattr(asset_data.exchange, "value", "")
+                                if hasattr(asset_data, "exchange")
+                                else ""
+                            ),
+                            asset_class=str(
+                                getattr(asset_data.asset_class, "value", "us_equity")
+                                if hasattr(asset_data, "asset_class")
+                                else "us_equity"
+                            ),
+                            tradable=bool(getattr(asset_data, "tradable", False)),
+                        )
+                    )
 
             logger.info("Retrieved tradable assets", count=len(result))
             return result
@@ -213,28 +243,28 @@ class AlpacaClient:
     def get_live_data_feed(self, symbol: str):
         """Create live data feed for Backtrader."""
         import backtrader as bt
-        
+
         # For now, use historical data as placeholder for live feed
         # In production, this would use Alpaca's streaming WebSocket API
         logger.info("Creating live data feed", symbol=symbol)
-        
+
         # Get recent historical data to simulate live feed
         start_date = datetime.now() - timedelta(days=5)
         historical_data = self.get_historical_bars(symbol, start=start_date)
-        
+
         # Convert to Backtrader data feed format
         return bt.feeds.PandasData(dataname=historical_data)
 
     def get_historical_data(self, symbol: str, days: int):
         """Get historical data for backtesting."""
         import backtrader as bt
-        
+
         logger.info("Getting historical data for backtest", symbol=symbol, days=days)
-        
+
         # Get historical bars
         start_date = datetime.now() - timedelta(days=days)
         historical_data = self.get_historical_bars(symbol, start=start_date)
-        
+
         # Convert to Backtrader data feed format
         return bt.feeds.PandasData(dataname=historical_data)
 
