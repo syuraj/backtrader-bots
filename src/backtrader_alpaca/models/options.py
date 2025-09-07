@@ -6,7 +6,7 @@ from typing import Optional, List
 from uuid import UUID
 from enum import Enum
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 
 class OptionType(str, Enum):
@@ -51,28 +51,30 @@ class OptionContract(BaseModel):
     quote_timestamp: Optional[datetime] = Field(None, description="Quote timestamp")
     updated_at: Optional[datetime] = Field(None, description="Last update timestamp")
     
-    @validator('strike_price', 'bid_price', 'ask_price', 'last_price')
+    @field_validator('strike_price', 'bid_price', 'ask_price', 'last_price', mode='before')
+    @classmethod
     def validate_positive_prices(cls, v):
         """Validate that prices are positive."""
         if v is not None and v < 0:
             raise ValueError("Prices must be non-negative")
         return v
     
-    @validator('volume', 'open_interest')
+    @field_validator('volume', 'open_interest', mode='before')
+    @classmethod
     def validate_non_negative_integers(cls, v):
         """Validate that volume and open interest are non-negative."""
         if v is not None and v < 0:
             raise ValueError("Volume and open interest must be non-negative")
         return v
     
-    class Config:
-        """Pydantic configuration."""
-        json_encoders = {
+    model_config = ConfigDict(
+        json_encoders={
             Decimal: lambda v: float(v),
             UUID: lambda v: str(v),
             datetime: lambda v: v.isoformat(),
             date: lambda v: v.isoformat()
         }
+    )
 
 
 class OptionsChain(BaseModel):
@@ -90,7 +92,8 @@ class OptionsChain(BaseModel):
     expiration_dates: List[date] = Field(default_factory=list, description="Available expiration dates")
     strike_prices: List[Decimal] = Field(default_factory=list, description="Available strike prices")
     
-    @validator('underlying_price')
+    @field_validator('underlying_price', mode='before')
+    @classmethod
     def validate_underlying_price(cls, v):
         """Validate underlying price is positive."""
         if v is not None and v <= 0:
@@ -121,13 +124,13 @@ class OptionsChain(BaseModel):
             if abs(contract.strike_price - self.underlying_price) / self.underlying_price <= tolerance
         ]
     
-    class Config:
-        """Pydantic configuration."""
-        json_encoders = {
+    model_config = ConfigDict(
+        json_encoders={
             Decimal: lambda v: float(v),
             datetime: lambda v: v.isoformat(),
             date: lambda v: v.isoformat()
         }
+    )
 
 
 # Greeks calculation models removed - using API data only
@@ -156,23 +159,25 @@ class HistoricalOptionsData(BaseModel):
     # Volatility data
     implied_volatility: Optional[Decimal] = Field(None, description="Historical implied volatility")
     
-    @validator('open_price', 'high_price', 'low_price', 'close_price')
+    @field_validator('open_price', 'high_price', 'low_price', 'close_price', mode='before')
+    @classmethod
     def validate_prices(cls, v):
         """Validate prices are non-negative."""
         if v is not None and v < 0:
             raise ValueError("Prices must be non-negative")
         return v
     
-    @validator('volume')
+    @field_validator('volume', mode='before')
+    @classmethod
     def validate_volume(cls, v):
         """Validate volume is non-negative."""
         if v is not None and v < 0:
             raise ValueError("Volume must be non-negative")
         return v
     
-    class Config:
-        """Pydantic configuration."""
-        json_encoders = {
+    model_config = ConfigDict(
+        json_encoders={
             Decimal: lambda v: float(v),
             datetime: lambda v: v.isoformat()
         }
+    )

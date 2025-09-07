@@ -5,7 +5,7 @@ from decimal import Decimal
 from datetime import datetime
 from enum import Enum
 
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 from ..utils.logger import get_logger
 
@@ -30,11 +30,9 @@ class RiskAlert(BaseModel):
     threshold: float = Field(..., description="Risk threshold that was breached")
     timestamp: datetime = Field(default_factory=datetime.now, description="Alert timestamp")
     
-    class Config:
-        """Pydantic configuration."""
-        json_encoders = {
-            datetime: lambda v: v.isoformat()
-        }
+    model_config = ConfigDict(
+        json_encoders={datetime: lambda v: v.isoformat()}
+    )
 
 
 class PositionLimits(BaseModel):
@@ -44,7 +42,7 @@ class PositionLimits(BaseModel):
     max_position_value: Optional[Decimal] = Field(None, gt=0, description="Maximum position value in USD")
     max_portfolio_concentration: Optional[Decimal] = Field(None, gt=0, lt=1, description="Max % of portfolio in single position")
     
-    @validator('max_portfolio_concentration')
+    @field_validator('max_portfolio_concentration')
     def validate_concentration(cls, v):
         """Validate concentration is between 0 and 1."""
         if v is not None and (v <= 0 or v >= 1):
@@ -59,7 +57,7 @@ class DrawdownLimits(BaseModel):
     max_daily_loss_pct: Optional[Decimal] = Field(None, gt=0, lt=1, description="Maximum daily loss as % of portfolio")
     max_drawdown_pct: Optional[Decimal] = Field(None, gt=0, lt=1, description="Maximum drawdown from peak")
     
-    @validator('max_daily_loss_pct', 'max_drawdown_pct')
+    @field_validator('max_daily_loss_pct', 'max_drawdown_pct')
     def validate_percentages(cls, v):
         """Validate percentages are between 0 and 1."""
         if v is not None and (v <= 0 or v >= 1):

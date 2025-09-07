@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Literal, Any, Dict
 
 from pydantic import Field, field_validator
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from dotenv import load_dotenv
 
 
@@ -73,10 +73,11 @@ class TradingSettings(BaseSettings):
         v.mkdir(parents=True, exist_ok=True)
         return v
     
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False
+    )
 
 
 def load_settings() -> TradingSettings:

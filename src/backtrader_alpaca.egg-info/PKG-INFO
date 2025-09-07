@@ -42,11 +42,11 @@ Requires-Dist: pre-commit>=3.3.0; extra == "dev"
 
 # Backtrader-Alpaca Trading Platform
 
-Unified options and equities trading platform integrating Backtrader framework with Alpaca API for seamless backtesting, paper trading, and live execution.
+Options and equities trading platform integrating Backtrader framework with Alpaca API for seamless backtesting, paper trading, and live execution.
 
 ## Features
 
-- **Unified Strategy Framework**: Single codebase for backtest/paper/live modes
+- **Strategy Framework**: Single codebase for backtest/paper/live modes
 - **Options Data Pipeline**: Real-time options chains with Greeks from Alpaca API
 - **Risk Management**: Position limits, stop-loss, drawdown protection
 - **Performance Monitoring**: Real-time P&L tracking with CSV export and visualization
@@ -163,11 +163,11 @@ class MyStrategy(UnifiedStrategy):
         ('position_size', 100),
         ('stop_loss_pct', 0.05),
     )
-    
+
     def init_strategy(self):
         """Initialize indicators and state."""
         self.sma = self.data.close.sma(period=20)
-    
+
     def generate_signals(self):
         """Generate buy/sell signals."""
         if self.data.close[0] > self.sma[0]:

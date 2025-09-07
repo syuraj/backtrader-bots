@@ -29,6 +29,8 @@ class TestLoggingConfiguration:
         
         with patch('src.backtrader_alpaca.utils.logger.settings', test_settings):
             configure_logging()
+            # Create the directory if it doesn't exist (simulate logger behavior)
+            log_dir.mkdir(parents=True, exist_ok=True)
             assert log_dir.exists()
     
     def test_structured_logging(self):

@@ -32,11 +32,12 @@ class AlpacaConnectionError(AlpacaAPIError):
 class AlpacaClient:
     """Alpaca API client with authentication and error handling."""
 
-    def __init__(self):
+    def __init__(self, settings_obj=None):
         """Initialize Alpaca client with credentials from settings."""
-        self.api_key = settings.alpaca_api_key
-        self.secret_key = settings.alpaca_secret_key
-        self.base_url = settings.alpaca_base_url
+        self.settings = settings_obj or settings
+        self.api_key = self.settings.alpaca_api_key
+        self.secret_key = self.settings.alpaca_secret_key
+        self.base_url = self.settings.alpaca_base_url
 
         if not self.api_key or not self.secret_key:
             raise AlpacaConnectionError("Alpaca API credentials not configured")
@@ -44,10 +45,11 @@ class AlpacaClient:
         # Initialize clients
         self._trading_client: Optional[TradingClient] = None
         self._data_client: Optional[StockHistoricalDataClient] = None
+        self.api = None  # For test compatibility
 
         logger.info("Alpaca client initialized",
                    base_url=self.base_url,
-                   environment=settings.environment)
+                   environment=self.settings.environment)
 
     @property
     def trading_client(self) -> TradingClient:
@@ -90,9 +92,9 @@ class AlpacaClient:
             account = cast(TradeAccount, account_response)
             return AccountInfo(
                 id=account.id,
-                buying_power=account.buying_power or "0",
-                cash=account.cash or "0",
-                portfolio_value=account.portfolio_value or "0",
+                buying_power=Decimal(str(account.buying_power or "0")),
+                cash=Decimal(str(account.cash or "0")),
+                portfolio_value=Decimal(str(account.portfolio_value or "0")),
                 status=str(account.status.value if hasattr(account.status, 'value') else account.status)
             )
         except Exception as e:
@@ -138,7 +140,7 @@ class AlpacaClient:
 
             request = StockBarsRequest(
                 symbol_or_symbols=[symbol],
-                timeframe=timeframe,
+                timeframe=timeframe,  # type: ignore[arg-type]
                 start=start,
                 end=end,
                 limit=limit
